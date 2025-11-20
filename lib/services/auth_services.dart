@@ -30,6 +30,8 @@ class AuthServices {
       rethrow;
     }
   }
+  
+
   //register with email and password
   Future<UserCredential> registerWithEmailAndPassword(String email, String password) async {
     try {

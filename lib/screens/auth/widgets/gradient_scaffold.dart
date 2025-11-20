@@ -14,7 +14,7 @@ class GradientScaffold extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
-            end: AlignmentGeometry.bottomCenter,
+            end: Alignment.bottomCenter,
             colors: [
               Colors.blue[700]!,
               Colors.blue[500]!,
@@ -35,7 +35,8 @@ class GradientScaffold extends StatelessWidget {
                   _buildTitle(),
                   SizedBox(height: 8,),
                   _buildSubtitle(),
-                  SizedBox(height: 48,)
+                  SizedBox(height: 48,),
+                  child
                 ],
               ),
             ),
