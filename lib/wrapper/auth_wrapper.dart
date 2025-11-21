@@ -31,7 +31,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
           );
         }
         if (snapshot.hasData) {
-          return HomeScreen();
+          return home_screen();
         }
         
         return _showLogin ? LoginScreen(onRegisterTap: _toogleView,) : RegisterScreen(onLoginTap: _toogleView);

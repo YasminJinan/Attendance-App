@@ -4,8 +4,9 @@ import 'package:flutter_application_1/models/attendance_record.dart';
 class FirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // get attendance records for a user (realtime stream)
-  Stream<List<AttendanceRecord>> getAttendaceRecords(String userId) {
+
+  // get attandance records for a user (real-time stream)
+  Stream<List<AttendanceRecord>> getAttendanceRecords(String userId) {
     return _firestore
         .collection('attendance')
         .where('user_id', isEqualTo: userId)
@@ -13,15 +14,17 @@ class FirestoreService {
         .snapshots()
         .map((snapshot) {
           return snapshot.docs
-              .map((doc) => AttendanceRecord.fromJson({...doc.data(), 'id': doc.id}))
-              .toList();
+            .map((doc) => AttendanceRecord.fromJson({...doc.data(), 'id':doc.id}))
+            .toList();
         });
   }
-  // get todays attendance record (real-time stream)
-  Stream<AttendanceRecord?> getTodayRecordStrem(String userId) {
+
+  // get today's attendance record (real-time stream)
+  Stream<AttendanceRecord?> getTodayRecordStream(String userId) {
     final now = DateTime.now();
     final startOfDay = DateTime(now.year, now.month, now.day);
     final endOfDay = startOfDay.add(Duration(days: 1));
+
     return _firestore
         .collection('attendance')
         .where('user_id', isEqualTo: userId)
@@ -29,21 +32,20 @@ class FirestoreService {
         .limit(10)
         .snapshots()
         .map((snapshot) {
-          // filter's todays record on client-side
+          // filter today's record on client side (filtrasinya di uinya)
           for (var doc in snapshot.docs) {
             final data = doc.data();
             final checkInTime = DateTime.parse(data['check_in_time'] as String);
 
             if (checkInTime.isAfter(startOfDay) && checkInTime.isBefore(endOfDay)) {
-              return AttendanceRecord.fromJson({...data, 'id' : doc.id});
+              return AttendanceRecord.fromJson({...data, 'id': doc.id});
             }
-            return null;
-          }
-        }) ;
+          } return null;
+        });
   }
 
-  // get todays attendance record(one time fetch)
-  Future<AttendanceRecord?> getTodayRecord(String, userId) async {
+  // get today's attendance record (one-time fetch)
+  Future<AttendanceRecord?> getTodayRecord(String userId) async {
     final today = DateTime.now();
     final startOfDay = DateTime(today.year, today.month, today.day);
     final endOfDay = startOfDay.add(Duration(days: 1));
@@ -57,8 +59,33 @@ class FirestoreService {
 
       if (querySnapshot.docs.isEmpty) return null;
 
-      return AttendanceRecord.fromJson({...querySnapshot.docs.first.data(), 'id' : querySnapshot.docs.first.id}
+      return AttendanceRecord.fromJson(
+        {...querySnapshot.docs.first.data(), 'id': querySnapshot.docs.first.id}
       );
+  }
 
+  // create new attendance record
+  Future<String> createAttendanceRecord(AttendanceRecord record) async {
+    final docRef = await _firestore.collection('attendance').add(record.toJson());
+    return docRef.id;
+  }
+
+  // update existing attendance record
+  Future<void> updateAttandanceRecord(AttendanceRecord record) async {
+    await _firestore
+        .collection('attendance')
+        .doc(record.id)
+        .update(record.toJson());
+  }
+
+  // create od update attendance record
+  Future<void> saveAttendanceRecord(AttendanceRecord record) async {
+    if (record.id == '1' || record.id.isEmpty) {
+      // new record for creating auto generated id
+      await createAttendanceRecord(record);
+    } else { // kkalo nilainya ga kosong
+      // update existing record
+      await updateAttandanceRecord(record);
+    }
   }
 }
